@@ -571,13 +571,17 @@ function ExamListItem({ exam, onClick, isSimulationMode, simulatedGrade, onSimul
                 min="18"
                 max="30"
                 placeholder="-"
+                onClick={(e) => e.stopPropagation()}
                 value={simulatedGrade || ''}
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
-                  if (!isNaN(val) && val >= 18 && val <= 31 && onSimulate) {
-                    onSimulate(val);
+                  if (!isNaN(val) && onSimulate) {
+                    // Allow input of any number, validation happens on calculation/blur if needed
+                    // We only cap at 33 just to prevent absurd numbers, but allowing 1-30 is consistent
+                    if (val <= 33) {
+                      onSimulate(val);
+                    }
                   } else if (e.target.value === '' && onSimulate) {
-                    // Gestiamo il caso di input vuoto (clear)
                     // @ts-ignore
                     onSimulate(undefined);
                   }

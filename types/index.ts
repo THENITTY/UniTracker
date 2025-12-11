@@ -8,3 +8,12 @@ export interface Exam {
     location?: string; // Sede d'esame
     isPaidLocation?: boolean; // Se la sede comporta costi extra
 }
+
+export interface Deadline {
+    id: string;
+    title: string;
+    due_date: string;
+    amount: number;
+    is_completed: boolean;
+    category: 'tax' | 'material' | 'project' | 'other';
+}
