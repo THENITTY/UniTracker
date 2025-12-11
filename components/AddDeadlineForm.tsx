@@ -16,7 +16,7 @@ export default function AddDeadlineForm({ initialData, onSave, onDelete, onCance
     const [title, setTitle] = useState('');
     const [date, setDate] = useState('');
     const [amount, setAmount] = useState('');
-    const [category, setCategory] = useState<'tax' | 'admin'>('tax');
+    const [category, setCategory] = useState<Deadline['category']>('tax');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -170,10 +170,10 @@ export default function AddDeadlineForm({ initialData, onSave, onDelete, onCance
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setCategory('admin')}
-                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${category === 'admin' ? 'bg-slate-100 border-slate-300 text-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                onClick={() => setCategory('other')}
+                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${category === 'other' ? 'bg-slate-100 border-slate-300 text-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                             >
-                                Burocrazia
+                                Altro / Varie
                             </button>
                         </div>
                     </div>
