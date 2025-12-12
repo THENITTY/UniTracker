@@ -14,6 +14,7 @@
 *   **Styling**: Tailwind CSS v4 (utilizzando `lucide-react` per le icone)
 *   **Database**: Supabase (PostgreSQL) con `supabase-js`
 *   **Hosting**: Vercel
+*   **Percorso Locale**: `/Users/marcogranieri/.gemini/antigravity/scratch/unitracker`
 
 ---
 
