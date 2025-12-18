@@ -10,6 +10,8 @@ import webpush from 'web-push';
 
 
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     // 1. Check authorization (Vercel Cron Header) ensuring it's not spam-called
     // The header 'Authorization' with 'Bearer ${process.env.CRON_SECRET}' is standard for Vercel Cron
