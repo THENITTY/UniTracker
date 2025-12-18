@@ -379,7 +379,7 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
                                 </button>
                             </div>
                         </div>
-                        <p className="text-xs text-slate-400">Se non imposti l'ora, sarà default 11:30.</p>
+                        <p className="text-xs text-slate-400">Se non imposti l&apos;ora, sarà default 11:30.</p>
                     </div>
 
                     <div className="pt-4 flex gap-3">

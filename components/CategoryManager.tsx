@@ -39,9 +39,9 @@ export default function CategoryManager({ categories, onClose, onUpdate }: Categ
                 onUpdate([...categories, data]);
                 setNewCategoryName('');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error adding category:', error);
-            alert('Errore aggiunta categoria: ' + error.message);
+            alert('Errore aggiunta categoria: ' + (error as Error).message);
         } finally {
             setIsSubmitting(false);
         }
@@ -59,9 +59,9 @@ export default function CategoryManager({ categories, onClose, onUpdate }: Categ
             if (error) throw error;
 
             onUpdate(categories.filter(c => c.id !== id));
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error deleting category:', error);
-            alert('Errore eliminazione: ' + error.message);
+            alert('Errore eliminazione: ' + (error as Error).message);
         }
     };
 

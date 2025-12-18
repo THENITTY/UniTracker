@@ -53,6 +53,7 @@ export default function Home() {
 
     // Handle Exams
     if (examsRes.data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mappedExams: Exam[] = examsRes.data.map((e: any) => ({
         id: e.id,
         name: e.name,

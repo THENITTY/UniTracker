@@ -72,9 +72,10 @@ export default function NotificationManager() {
             // Send a test notification immediately (optional, or rely on cron)
             // await fetch('/api/cron/reminders'); 
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Subscription failed', error);
-            alert('Errore attivazione notifiche: ' + error.message);
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            alert('Errore attivazione notifiche: ' + msg);
         } finally {
             setIsLoading(false);
         }
@@ -100,8 +101,8 @@ export default function NotificationManager() {
                 onClick={subscribeUser}
                 disabled={isSubscribed || isLoading}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isSubscribed
-                        ? 'bg-green-50 text-green-700 cursor-default'
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    ? 'bg-green-50 text-green-700 cursor-default'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
                     }`}
             >
                 {isLoading ? <Loader2 size={16} className="animate-spin" /> :

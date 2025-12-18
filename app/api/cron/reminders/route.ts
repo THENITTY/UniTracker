@@ -20,7 +20,7 @@ webpush.setVapidDetails(
     VAPID_PRIVATE_KEY
 );
 
-export async function GET(request: Request) {
+export async function GET() {
     // 1. Check authorization (Vercel Cron Header) ensuring it's not spam-called
     // The header 'Authorization' with 'Bearer ${process.env.CRON_SECRET}' is standard for Vercel Cron
     // For now we skip strict auth for MVP testing convenience, or check for a simple query param ?key=...
@@ -53,11 +53,9 @@ export async function GET(request: Request) {
             let body = 'Hai una scadenza oggi!';
 
             if (reminder.entity_type === 'exam' && reminder.exams) {
-                // @ts-ignore
                 title = `Esame in arrivo: ${reminder.exams.name}`;
                 body = 'Preparati per il tuo esame!';
             } else if (reminder.entity_type === 'deadline' && reminder.deadlines) {
-                // @ts-ignore
                 title = `Scadenza: ${reminder.deadlines.title}`;
                 body = 'Ricordati di pagare questa scadenza.';
             }
@@ -83,8 +81,9 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ success: true, sent: sentCount });
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('Cron job failed:', err);
-        return NextResponse.json({ error: err.message }, { status: 500 });
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

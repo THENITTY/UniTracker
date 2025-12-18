@@ -160,9 +160,9 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                 onSave(completeDeadline);
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
-            alert('Errore nel salvataggio: ' + (error.message || 'Errore sconosciuto'));
+            alert('Errore nel salvataggio: ' + ((error as Error).message || 'Errore sconosciuto'));
         } finally {
             setIsSubmitting(false);
         }
@@ -184,9 +184,9 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
             if (error) throw error;
 
             onDelete(initialData.id);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
-            alert('Errore eliminazione: ' + error.message);
+            alert('Errore eliminazione: ' + (error as Error).message);
             setIsSubmitting(false);
         }
     };
@@ -369,7 +369,7 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                                     </button>
                                 </div>
                             </div>
-                            <p className="text-xs text-slate-400">Se non imposti l'ora, sarà default 11:30.</p>
+                            <p className="text-xs text-slate-400">Se non imposti l&apos;ora, sarà default 11:30.</p>
                         </div>
 
                         {/* Actions */}
