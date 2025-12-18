@@ -42,12 +42,12 @@ export async function GET() {
             VAPID_PRIVATE_KEY
         );
 
-        // 2. Fetch pending reminders for NOW or OLDER (missed ones)
-        const now = new Date().toISOString(); // Full timestamp needed for time comparison
+        // 2. Fetch pending reminders for NOW or OLDER
+        const now = new Date().toISOString();
 
         const { data: reminders, error } = await supabase
             .from('reminders')
-            .select('*, deadlines(title), exams(name)')
+            .select('*') // No joins here, just raw reminder data
             .eq('is_sent', false)
             .lte('remind_at', now);
 
@@ -56,8 +56,38 @@ export async function GET() {
             return NextResponse.json({ message: 'No reminders to send.' });
         }
 
-        // 3. Fetch all subscriptions (Broadcasting to all for now - in a multi-user app we'd filter by user_id)
-        // Since UniTracker is single-user personal app, sending to all registered devices is correct.
+        // 2.1 Fetch related entity details manually (Application-Side Join)
+        // Since entity_id is polymorphic (can be Exam or Deadline), we can't use standard SQL FK joins easily.
+        const deadlineIds = reminders
+            .filter((r) => r.entity_type === 'deadline')
+            .map((r) => r.entity_id);
+
+        const examIds = reminders
+            .filter((r) => r.entity_type === 'exam')
+            .map((r) => r.entity_id);
+
+        let deadlinesMap: Record<string, string> = {};
+        let examsMap: Record<string, string> = {};
+
+        if (deadlineIds.length > 0) {
+            const { data: deadlines } = await supabase
+                .from('deadlines')
+                .select('id, title')
+                .in('id', deadlineIds);
+
+            deadlines?.forEach((d) => { deadlinesMap[d.id] = d.title; });
+        }
+
+        if (examIds.length > 0) {
+            const { data: exams } = await supabase
+                .from('exams')
+                .select('id, name') // Assuming 'name' describes the exam course
+                .in('id', examIds);
+
+            exams?.forEach((e) => { examsMap[e.id] = e.name; });
+        }
+
+        // 3. Fetch all subscriptions
         const { data: subscriptions, error: subError } = await supabase.from('push_subscriptions').select('*');
         if (subError) throw subError;
 
@@ -66,14 +96,21 @@ export async function GET() {
         // 4. Send Notifications
         for (const reminder of reminders) {
             let title = 'Promemoria UniTracker';
-            let body = 'Hai una scadenza oggi!';
+            let body = 'Hai una scadenza in arrivo!';
+            let entityName = '';
 
-            if (reminder.entity_type === 'exam' && reminder.exams) {
-                title = `Esame in arrivo: ${reminder.exams.name}`;
-                body = 'Preparati per il tuo esame!';
-            } else if (reminder.entity_type === 'deadline' && reminder.deadlines) {
-                title = `Scadenza: ${reminder.deadlines.title}`;
-                body = 'Ricordati di pagare questa scadenza.';
+            if (reminder.entity_type === 'exam') {
+                entityName = examsMap[reminder.entity_id];
+                if (entityName) {
+                    title = `Esame in arrivo: ${entityName}`;
+                    body = `Preparati per l'esame di ${entityName}!`;
+                }
+            } else if (reminder.entity_type === 'deadline') {
+                entityName = deadlinesMap[reminder.entity_id];
+                if (entityName) {
+                    title = `Scadenza: ${entityName}`;
+                    body = `Non dimenticare: ${entityName} scade a breve.`;
+                }
             }
 
             const payload = JSON.stringify({ title, body, url: '/' });
@@ -87,11 +124,9 @@ export async function GET() {
                     sentCount++;
                 } catch (e) {
                     console.error('Failed to send to', sub.endpoint, e);
-                    // If error is 410 (Gone), delete subscription
                 }
             }
 
-            // 5. Mark as sent
             await supabase.from('reminders').update({ is_sent: true }).eq('id', reminder.id);
         }
 
