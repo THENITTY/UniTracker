@@ -7,7 +7,7 @@ import DeadlineList from '@/components/DeadlineList';
 import NotificationManager from '@/components/NotificationManager';
 import { supabase } from '@/lib/supabase';
 import { Deadline, Exam } from '@/types';
-import { BookOpen, Calendar, Coins, Euro, GraduationCap, MapPin, Plus, Trophy, Wand2 } from 'lucide-react';
+import { BookOpen, Calendar, Coins, Euro, GraduationCap, MapPin, Plus, Trophy, Wand2, Bell } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 export default function Home() {
@@ -49,7 +49,20 @@ export default function Home() {
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true });
 
-    const [examsRes, deadlinesRes, categoriesRes] = await Promise.all([examsReq, deadlinesReq, categoriesReq]);
+    // 4. Fetch Reminders
+    const remindersReq = supabase
+      .from('reminders')
+      .select('*')
+      .eq('is_sent', false); // Show only pending reminders
+
+    const [examsRes, deadlinesRes, categoriesRes, remindersRes] = await Promise.all([examsReq, deadlinesReq, categoriesReq, remindersReq]);
+
+    const reminders = (remindersRes.data as import('@/types').Reminder[]) || [];
+    const remindersByEntity: Record<string, import('@/types').Reminder[]> = {};
+    reminders.forEach(r => {
+      if (!remindersByEntity[r.entity_id]) remindersByEntity[r.entity_id] = [];
+      remindersByEntity[r.entity_id].push(r);
+    });
 
     // Handle Exams
     if (examsRes.data) {
@@ -63,13 +76,18 @@ export default function Home() {
         status: e.status,
         location: e.location,
         isPaidLocation: e.is_paid_location,
+        reminders: remindersByEntity[e.id] || []
       }));
       setExams(mappedExams);
     }
 
     // Handle Deadlines
     if (deadlinesRes.data) {
-      setDeadlines(deadlinesRes.data as Deadline[]);
+      const mappedDeadlines: Deadline[] = (deadlinesRes.data as any[]).map(d => ({
+        ...d,
+        reminders: remindersByEntity[d.id] || []
+      }));
+      setDeadlines(mappedDeadlines);
     }
 
     // Handle Categories
@@ -80,6 +98,7 @@ export default function Home() {
     if (examsRes.error) console.error(examsRes.error);
     if (deadlinesRes.error) console.error(deadlinesRes.error);
     if (categoriesRes.error) console.error(categoriesRes.error);
+    if (remindersRes.error) console.error(remindersRes.error);
 
     setIsLoading(false);
   };
@@ -565,6 +584,12 @@ function ExamListItem({ exam, onClick, isSimulationMode, simulatedGrade, onSimul
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200">
                 <Coins size={10} />
                 Sede Extra
+              </span>
+            )}
+            {exam.reminders && exam.reminders.length > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-100 text-indigo-700 border border-indigo-200" title={`${exam.reminders.length} promemoria attivi`}>
+                <Bell size={10} />
+                {new Date(exam.reminders[0].remind_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
           </div>

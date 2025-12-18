@@ -7,6 +7,7 @@ export interface Exam {
     status: 'passed' | 'planned' | 'failed';
     location?: string; // Sede d'esame
     isPaidLocation?: boolean; // Se la sede comporta costi extra
+    reminders?: Reminder[];
 }
 
 export interface Deadline {
@@ -17,6 +18,7 @@ export interface Deadline {
     is_completed: boolean;
     category: string;
     items?: DeadlineItem[];
+    reminders?: Reminder[];
 }
 
 export interface DeadlineItem {
@@ -31,4 +33,12 @@ export interface DeadlineCategory {
     id: string;
     name: string;
     sort_order?: number;
+}
+
+export interface Reminder {
+    id: string;
+    entity_type: 'exam' | 'deadline';
+    entity_id: string;
+    remind_at: string;
+    is_sent: boolean;
 }

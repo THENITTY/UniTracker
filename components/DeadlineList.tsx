@@ -1,7 +1,7 @@
 'use client';
 
 import { Deadline } from '@/types';
-import { CalendarClock, CheckCircle2, Circle, Euro, FileText } from 'lucide-react';
+import { CalendarClock, CheckCircle2, Circle, Euro, FileText, Bell } from 'lucide-react';
 
 interface DeadlineListProps {
     deadlines: Deadline[];
@@ -71,6 +71,12 @@ export default function DeadlineList({ deadlines, onToggle, onEdit }: DeadlineLi
                                         <FileText size={14} />
                                         Dettagli
                                     </span>
+                                    {item.reminders && item.reminders.length > 0 && (
+                                        <span className="flex items-center gap-1 text-indigo-600 font-medium" title="Promemoria attivo">
+                                            <Bell size={14} />
+                                            {new Date(item.reminders[0].remind_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
