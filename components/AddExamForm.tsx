@@ -342,18 +342,44 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
                                     </span>
                                 );
                             })}
-                            <input
-                                type="datetime-local"
-                                className="px-3 py-1.5 border border-slate-200 rounded-md text-sm outline-none focus:border-indigo-500 text-slate-600 bg-white"
-                                onChange={(e) => {
-                                    if (e.target.value) {
-                                        setReminders(prev => [...prev, e.target.value]);
-                                        e.target.value = '';
-                                    }
-                                }}
-                            />
+                            <div className="flex items-end gap-2 text-sm w-full">
+                                <div className="flex-1">
+                                    <label className="text-xs text-slate-500 mb-1 block">Giorno</label>
+                                    <input
+                                        type="date"
+                                        id="exam-rem-date-input"
+                                        className="w-full px-3 py-1.5 border border-slate-200 rounded-md outline-none focus:border-indigo-500 text-slate-600 bg-white"
+                                    />
+                                </div>
+                                <div className="w-24">
+                                    <label className="text-xs text-slate-500 mb-1 block">Ora (opz)</label>
+                                    <input
+                                        type="time"
+                                        id="exam-rem-time-input"
+                                        className="w-full px-3 py-1.5 border border-slate-200 rounded-md outline-none focus:border-indigo-500 text-slate-600 bg-white"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const dateInput = document.getElementById('exam-rem-date-input') as HTMLInputElement;
+                                        const timeInput = document.getElementById('exam-rem-time-input') as HTMLInputElement;
+
+                                        if (dateInput.value) {
+                                            const time = timeInput.value || '11:30';
+                                            const fullDate = `${dateInput.value}T${time}`;
+                                            setReminders(prev => [...prev, fullDate]);
+                                            dateInput.value = '';
+                                            timeInput.value = '';
+                                        }
+                                    }}
+                                    className="px-3 py-1.5 bg-indigo-50 text-indigo-700 font-medium rounded-md hover:bg-indigo-100 transition-colors border border-indigo-200"
+                                >
+                                    Aggiungi
+                                </button>
+                            </div>
                         </div>
-                        <p className="text-xs text-slate-400">Seleziona data e ora per ricevere una notifica.</p>
+                        <p className="text-xs text-slate-400">Se non imposti l'ora, sarà default 11:30.</p>
                     </div>
 
                     <div className="pt-4 flex gap-3">
