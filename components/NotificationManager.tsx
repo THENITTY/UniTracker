@@ -81,6 +81,33 @@ export default function NotificationManager() {
         }
     };
 
+    const unsubscribeUser = async () => {
+        setIsLoading(true);
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+
+            if (subscription) {
+                await subscription.unsubscribe();
+
+                await fetch('/api/notifications/subscribe', {
+                    method: 'DELETE',
+                    body: JSON.stringify({ endpoint: subscription.endpoint }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                setIsSubscribed(false);
+                alert('Notifiche disattivate.');
+            }
+        } catch (error: unknown) {
+            console.error('Unsubscription failed', error);
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            alert('Errore disattivazione: ' + msg);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     if (!isSupported) return null; // Don't show if not supported (e.g. some old browsers)
 
     return (
@@ -98,15 +125,15 @@ export default function NotificationManager() {
             </div>
 
             <button
-                onClick={subscribeUser}
-                disabled={isSubscribed || isLoading}
+                onClick={isSubscribed ? unsubscribeUser : subscribeUser}
+                disabled={isLoading}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isSubscribed
-                    ? 'bg-green-50 text-green-700 cursor-default'
+                    ? 'bg-red-50 text-red-700 hover:bg-red-100'
                     : 'bg-indigo-600 text-white hover:bg-indigo-700'
                     }`}
             >
                 {isLoading ? <Loader2 size={16} className="animate-spin" /> :
-                    isSubscribed ? 'Attive' : 'Attiva ora'}
+                    isSubscribed ? 'Disattiva' : 'Attiva ora'}
             </button>
         </div>
     );

@@ -41,3 +41,28 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request) {
+    try {
+        const { endpoint } = await request.json();
+
+        if (!endpoint) {
+            return NextResponse.json({ error: 'Endpoint required' }, { status: 400 });
+        }
+
+        const { error } = await supabase
+            .from('push_subscriptions')
+            .delete()
+            .eq('endpoint', endpoint);
+
+        if (error) {
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (err: unknown) {
+        console.error('Error in unsubscribe route:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
+    }
+}
