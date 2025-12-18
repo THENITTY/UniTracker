@@ -396,8 +396,12 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
 
                                             if (dateInput.value) {
                                                 const time = timeInput.value || '09:00';
-                                                const fullDate = `${dateInput.value}T${time}`;
-                                                setReminders(prev => [...prev, { remind_at: fullDate }]);
+                                                // Create Date from local components (YYYY-MM-DDTHH:mm is treated as local)
+                                                // then convert to ISO UTC string for DB consistency
+                                                const localDate = new Date(`${dateInput.value}T${time}`);
+                                                const isoDate = localDate.toISOString();
+
+                                                setReminders(prev => [...prev, { remind_at: isoDate }]);
                                                 dateInput.value = '';
                                                 timeInput.value = '09:00';
                                             }
