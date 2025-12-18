@@ -49,7 +49,9 @@ export async function GET() {
             .from('reminders')
             .select('*') // No joins here, just raw reminder data
             .eq('is_sent', false)
-            .lte('remind_at', now);
+            .lte('remind_at', now)
+            .order('remind_at', { ascending: true })
+            .limit(1);
 
         if (error) throw error;
         if (!reminders || reminders.length === 0) {
