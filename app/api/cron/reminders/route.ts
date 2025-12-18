@@ -26,14 +26,14 @@ export async function GET() {
     // For now we skip strict auth for MVP testing convenience, or check for a simple query param ?key=...
 
     try {
-        // 2. Fetch pending reminders for TODAY or OLDER (missed ones)
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        // 2. Fetch pending reminders for NOW or OLDER (missed ones)
+        const now = new Date().toISOString(); // Full timestamp needed for time comparison
 
         const { data: reminders, error } = await supabase
             .from('reminders')
-            .select('*, deadlines(title), exams(name)') // Join to get titles
+            .select('*, deadlines(title), exams(name)')
             .eq('is_sent', false)
-            .lte('remind_at', today);
+            .lte('remind_at', now);
 
         if (error) throw error;
         if (!reminders || reminders.length === 0) {
