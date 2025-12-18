@@ -6,9 +6,7 @@ import webpush from 'web-push';
 // For this MVP we act with user's keys but Cron usually runs server-side trusted.
 // We'll use env vars.
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!; // Or Service Role key for better security in Cron
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Supabase client will be initialized inside the handler to catch config errors
 
 
 
@@ -18,17 +16,21 @@ export async function GET() {
     // For now we skip strict auth for MVP testing convenience, or check for a simple query param ?key=...
 
     try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+            return NextResponse.json({ error: 'Missing Supabase keys (NEXT_PUBLIC_SUPABASE_URL or ANON_KEY)' }, { status: 500 });
+        }
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
         const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
         const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
         const VAPID_SUBJECT = process.env.NEXT_PUBLIC_VAPID_SUBJECT!;
 
         if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY || !VAPID_SUBJECT) {
-            console.error('Missing VAPID keys');
             return NextResponse.json({ error: 'Missing VAPID keys' }, { status: 500 });
-        }
-
-        if (!supabaseUrl || !supabaseAnonKey) {
-            return NextResponse.json({ error: 'Missing Supabase keys' }, { status: 500 });
         }
 
         webpush.setVapidDetails(
