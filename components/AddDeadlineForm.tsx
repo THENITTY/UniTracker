@@ -28,7 +28,13 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
     const [items, setItems] = useState<DraftItem[]>([
         { id: '1', amount: '', category: 'tax', description: '' }
     ]);
-    const [reminders, setReminders] = useState<string[]>([]);
+    interface ReminderItem {
+        id?: string;
+        remind_at: string;
+    }
+
+    const [reminders, setReminders] = useState<ReminderItem[]>([]);
+    const [remindersToDelete, setRemindersToDelete] = useState<string[]>([]); // IDs to delete on save
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showCategoryManager, setShowCategoryManager] = useState(false);
@@ -55,6 +61,20 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                     description: ''
                 }]);
             }
+
+            // Fetch existing reminders
+            const fetchReminders = async () => {
+                const { data } = await supabase
+                    .from('reminders')
+                    .select('*')
+                    .eq('entity_type', 'deadline')
+                    .eq('entity_id', initialData.id);
+
+                if (data) {
+                    setReminders(data.map(r => ({ id: r.id, remind_at: r.remind_at })));
+                }
+            };
+            fetchReminders();
         }
     }, [initialData]);
 
@@ -93,7 +113,8 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
             };
 
             let deadlineId = initialData?.id;
-            let resultData;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let resultData: any;
 
             if (deadlineId) {
                 // UPDATE Parent
@@ -137,15 +158,26 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
             if (itemsRes.error) throw itemsRes.error;
 
             // 3. Manage Reminders
-            if (reminders.length > 0) {
-                const remindersToInsert = reminders.map(rDate => ({
+
+            // Delete removed reminders
+            if (remindersToDelete.length > 0) {
+                await supabase.from('reminders').delete().in('id', remindersToDelete);
+            }
+
+            // Upsert new/existing reminders
+            const newReminders = reminders.filter(r => !r.id);
+            if (newReminders.length > 0) {
+                const remindersToInsert = newReminders.map(r => ({
                     entity_type: 'deadline',
                     entity_id: deadlineId,
-                    remind_at: rDate,
+                    remind_at: r.remind_at,
                     is_sent: false
                 }));
                 await supabase.from('reminders').insert(remindersToInsert);
             }
+
+            // Refetch all reminders to return complete object
+            const { data: allReminders } = await supabase.from('reminders').select('*').eq('entity_id', deadlineId).eq('entity_type', 'deadline').eq('is_sent', false);
 
             if (resultData) {
                 const completeDeadline: Deadline = {
@@ -155,7 +187,8 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                     amount: resultData.amount,
                     is_completed: resultData.is_completed,
                     category: resultData.category,
-                    items: itemsRes.data as DeadlineItem[]
+                    items: itemsRes.data as DeadlineItem[],
+                    reminders: allReminders as import('@/types').Reminder[]
                 };
                 onSave(completeDeadline);
             }
@@ -168,21 +201,17 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
         }
     };
 
+    // ... items logic ...
+
     const handleDelete = async () => {
         if (!initialData?.id || !onDelete) return;
         setIsSubmitting(true);
 
         try {
-            // Items cascade delete usually, but let's be safe
             await supabase.from('deadline_items').delete().eq('deadline_id', initialData.id);
-
-            const { error } = await supabase
-                .from('deadlines')
-                .delete()
-                .eq('id', initialData.id);
+            const { error } = await supabase.from('deadlines').delete().eq('id', initialData.id);
 
             if (error) throw error;
-
             onDelete(initialData.id);
         } catch (error: unknown) {
             console.error(error);
@@ -190,6 +219,8 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
             setIsSubmitting(false);
         }
     };
+
+    // ... render return ...
 
     // Default categories if list is empty (fallback)
     const displayCategories = categories.length > 0 ? categories : [
@@ -200,6 +231,7 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                {/* ... header ... */}
                 <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50 shrink-0">
                     <h2 className="text-lg font-semibold text-slate-800">
                         {initialData ? 'Modifica Scadenza' : 'Aggiungi Scadenza'}
@@ -317,15 +349,21 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                             <label className="text-sm font-medium text-slate-700">Promemoria</label>
                             <div className="flex flex-wrap gap-2">
                                 {reminders.map((rem, idx) => {
-                                    const dateObj = new Date(rem);
+                                    const dateObj = new Date(rem.remind_at);
                                     if (isNaN(dateObj.getTime())) return null;
                                     return (
-                                        <span key={idx} className="bg-indigo-50 text-indigo-700 px-2 py-1.5 rounded-md text-sm flex items-center gap-1.5 border border-indigo-100 shadow-sm">
+                                        <span key={idx} className="bg-indigo-50 text-indigo-700 px-2 py-1.5 rounded-md text-sm flex items-center gap-1.5 border border-indigo-100 shadow-sm animate-in fade-in zoom-in-95">
                                             <span className="text-xs font-medium">{dateObj.toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}</span>
                                             <button
                                                 type="button"
-                                                onClick={() => setReminders(prev => prev.filter((_, i) => i !== idx))}
+                                                onClick={() => {
+                                                    if (rem.id) {
+                                                        setRemindersToDelete(prev => [...prev, rem.id!]);
+                                                    }
+                                                    setReminders(prev => prev.filter((_, i) => i !== idx));
+                                                }}
                                                 className="text-indigo-400 hover:text-indigo-600"
+                                                title="Rimuovi"
                                             >
                                                 <X size={14} />
                                             </button>
@@ -342,10 +380,11 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                                         />
                                     </div>
                                     <div className="w-24">
-                                        <label className="text-xs text-slate-500 mb-1 block">Ora (opz)</label>
+                                        <label className="text-xs text-slate-500 mb-1 block">Ora (default 09:00)</label>
                                         <input
                                             type="time"
                                             id="rem-time-input"
+                                            defaultValue="09:00"
                                             className="w-full px-3 py-1.5 border border-slate-200 rounded-md outline-none focus:border-indigo-500 text-slate-600 bg-white"
                                         />
                                     </div>
@@ -356,11 +395,11 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                                             const timeInput = document.getElementById('rem-time-input') as HTMLInputElement;
 
                                             if (dateInput.value) {
-                                                const time = timeInput.value || '11:30';
+                                                const time = timeInput.value || '09:00';
                                                 const fullDate = `${dateInput.value}T${time}`;
-                                                setReminders(prev => [...prev, fullDate]);
+                                                setReminders(prev => [...prev, { remind_at: fullDate }]);
                                                 dateInput.value = '';
-                                                timeInput.value = '';
+                                                timeInput.value = '09:00';
                                             }
                                         }}
                                         className="px-3 py-1.5 bg-indigo-50 text-indigo-700 font-medium rounded-md hover:bg-indigo-100 transition-colors border border-indigo-200"
@@ -369,7 +408,6 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                                     </button>
                                 </div>
                             </div>
-                            <p className="text-xs text-slate-400">Se non imposti l&apos;ora, sarà default 11:30.</p>
                         </div>
 
                         {/* Actions */}
