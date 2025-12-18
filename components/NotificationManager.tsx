@@ -100,9 +100,14 @@ export default function NotificationManager() {
                 alert('Notifiche disattivate.');
             }
         } catch (error: unknown) {
-            console.error('Unsubscription failed', error);
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            alert('Errore disattivazione: ' + msg);
+            console.error('Subscription failed', error);
+            let msg = error instanceof Error ? error.message : 'Unknown error';
+
+            if (msg.includes('push service error') || msg.includes('Registration failed')) {
+                msg += ' (Chiave VAPID non valida o browser incompatibile. Controlla le variabili d\'ambiente su Vercel o prova Chrome).';
+            }
+
+            alert('Errore attivazione notifiche: ' + msg);
         } finally {
             setIsLoading(false);
         }
