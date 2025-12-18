@@ -42,6 +42,7 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
                 .select('*')
                 .eq('entity_type', 'exam')
                 .eq('entity_id', initialData.id)
+                .eq('is_sent', false)
                 .then(({ data }) => {
                     if (data) {
                         setReminders(data.map(r => ({ id: r.id, remind_at: r.remind_at })));

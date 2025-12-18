@@ -68,7 +68,8 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                     .from('reminders')
                     .select('*')
                     .eq('entity_type', 'deadline')
-                    .eq('entity_id', initialData.id);
+                    .eq('entity_id', initialData.id)
+                    .eq('is_sent', false);
 
                 if (data) {
                     setReminders(data.map(r => ({ id: r.id, remind_at: r.remind_at })));
