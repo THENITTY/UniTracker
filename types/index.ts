@@ -16,6 +16,15 @@ export interface Deadline {
     amount: number;
     is_completed: boolean;
     category: string;
+    items?: DeadlineItem[];
+}
+
+export interface DeadlineItem {
+    id: string;
+    deadline_id: string;
+    description: string;
+    amount: number;
+    category: string;
 }
 
 export interface DeadlineCategory {

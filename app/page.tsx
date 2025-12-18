@@ -38,7 +38,7 @@ export default function Home() {
     // 2. Fetch Deadlines
     const deadlinesReq = supabase
       .from('deadlines')
-      .select('*')
+      .select('*, deadline_items(*)')
       .order('due_date', { ascending: true });
 
     // 3. Fetch Categories
