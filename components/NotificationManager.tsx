@@ -28,7 +28,10 @@ export default function NotificationManager() {
     useEffect(() => {
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             setIsSupported(true);
-            checkSubscription();
+            // Ensure registration is active
+            navigator.serviceWorker.register('/sw.js').then(() => {
+                checkSubscription();
+            });
         }
     }, []);
 
