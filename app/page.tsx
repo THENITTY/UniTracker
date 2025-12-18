@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from 'react';
 export default function Home() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [categories, setCategories] = useState<import('@/types').DeadlineCategory[]>([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeadlineFormOpen, setIsDeadlineFormOpen] = useState(false);
@@ -40,7 +41,13 @@ export default function Home() {
       .select('*')
       .order('due_date', { ascending: true });
 
-    const [examsRes, deadlinesRes] = await Promise.all([examsReq, deadlinesReq]);
+    // 3. Fetch Categories
+    const categoriesReq = supabase
+      .from('deadline_categories')
+      .select('*')
+      .order('name', { ascending: true });
+
+    const [examsRes, deadlinesRes, categoriesRes] = await Promise.all([examsReq, deadlinesReq, categoriesReq]);
 
     // Handle Exams
     if (examsRes.data) {
@@ -62,8 +69,14 @@ export default function Home() {
       setDeadlines(deadlinesRes.data as Deadline[]);
     }
 
+    // Handle Categories
+    if (categoriesRes.data) {
+      setCategories(categoriesRes.data);
+    }
+
     if (examsRes.error) console.error(examsRes.error);
     if (deadlinesRes.error) console.error(deadlinesRes.error);
+    if (categoriesRes.error) console.error(categoriesRes.error);
 
     setIsLoading(false);
   };
@@ -468,8 +481,10 @@ export default function Home() {
       {isDeadlineFormOpen && (
         <AddDeadlineForm
           initialData={editingDeadline || undefined}
+          categories={categories}
           onSave={handleSaveDeadline}
           onDelete={handleDeleteDeadline}
+          onCategoriesUpdate={setCategories}
           onCancel={() => {
             setIsDeadlineFormOpen(false);
             setEditingDeadline(null);

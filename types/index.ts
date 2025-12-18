@@ -15,5 +15,10 @@ export interface Deadline {
     due_date: string;
     amount: number;
     is_completed: boolean;
-    category: 'tax' | 'material' | 'project' | 'other';
+    category: string;
+}
+
+export interface DeadlineCategory {
+    id: string;
+    name: string;
 }

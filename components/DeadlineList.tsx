@@ -69,7 +69,9 @@ export default function DeadlineList({ deadlines, onToggle, onEdit }: DeadlineLi
                                     )}
                                     <span className="flex items-center gap-1 capitalize">
                                         <FileText size={14} />
-                                        {item.category === 'tax' ? 'Tassa' : 'Burocrazia'}
+                                        {item.category === 'tax' ? 'Tassa' :
+                                            item.category === 'other' ? 'Altro / Varie' :
+                                                item.category}
                                     </span>
                                 </div>
                             </div>
