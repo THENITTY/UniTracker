@@ -4,6 +4,7 @@ import AddDeadlineForm from '@/components/AddDeadlineForm';
 import AddExamForm from '@/components/AddExamForm';
 import CountdownHero from '@/components/CountdownHero';
 import DeadlineList from '@/components/DeadlineList';
+import NotificationManager from '@/components/NotificationManager';
 import { supabase } from '@/lib/supabase';
 import { Deadline, Exam } from '@/types';
 import { BookOpen, Calendar, Coins, Euro, GraduationCap, MapPin, Plus, Trophy, Wand2 } from 'lucide-react';
@@ -285,6 +286,9 @@ export default function Home() {
             <p className="text-slate-500 mt-1">
               La tua carriera universitaria sotto controllo
             </p>
+            <div className="mt-4">
+              <NotificationManager />
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

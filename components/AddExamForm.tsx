@@ -28,6 +28,7 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
     // Location state
     const [isPaidLocation, setIsPaidLocation] = useState(initialData?.isPaidLocation || false);
     const [location, setLocation] = useState(initialData?.location || '');
+    const [reminders, setReminders] = useState<string[]>([]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -92,6 +93,17 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
         }
 
         if (data) {
+            // 3. Manage Reminders
+            if (reminders.length > 0) {
+                const remindersToInsert = reminders.map(rDate => ({
+                    entity_type: 'exam',
+                    entity_id: data.id,
+                    remind_at: rDate,
+                    is_sent: false
+                }));
+                await supabase.from('reminders').insert(remindersToInsert);
+            }
+
             const savedExam: Exam = {
                 id: data.id,
                 name: data.name,
@@ -308,6 +320,34 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
                         />
                     </div>
 
+
+
+                    {/* Reminders Section */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-700">Promemoria</label>
+                        <div className="flex flex-wrap gap-2">
+                            {reminders.map((rem, idx) => (
+                                <span key={idx} className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm flex items-center gap-1 border border-indigo-100">
+                                    {new Date(rem).toLocaleDateString('it-IT')}
+                                    <button type="button" onClick={() => setReminders(prev => prev.filter((_, i) => i !== idx))}>
+                                        <X size={12} />
+                                    </button>
+                                </span>
+                            ))}
+                            <input
+                                type="date"
+                                className="p-1 border border-slate-200 rounded text-sm outline-none focus:border-indigo-500"
+                                onChange={(e) => {
+                                    if (e.target.value) {
+                                        setReminders(prev => [...prev, e.target.value]);
+                                        e.target.value = '';
+                                    }
+                                }}
+                            />
+                        </div>
+                        <p className="text-xs text-slate-400">Seleziona le date in cui vuoi ricevere una notifica.</p>
+                    </div>
+
                     <div className="pt-4 flex gap-3">
                         <button
                             type="button"
@@ -330,7 +370,7 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

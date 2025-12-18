@@ -28,6 +28,7 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
     const [items, setItems] = useState<DraftItem[]>([
         { id: '1', amount: '', category: 'tax', description: '' }
     ]);
+    const [reminders, setReminders] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showCategoryManager, setShowCategoryManager] = useState(false);
@@ -134,6 +135,17 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
 
             const itemsRes = await supabase.from('deadline_items').insert(itemsToInsert).select();
             if (itemsRes.error) throw itemsRes.error;
+
+            // 3. Manage Reminders
+            if (reminders.length > 0) {
+                const remindersToInsert = reminders.map(rDate => ({
+                    entity_type: 'deadline',
+                    entity_id: deadlineId,
+                    remind_at: rDate,
+                    is_sent: false
+                }));
+                await supabase.from('reminders').insert(remindersToInsert);
+            }
 
             if (resultData) {
                 const completeDeadline: Deadline = {
@@ -298,6 +310,32 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                                     Gestisci Categorie
                                 </button>
                             </div>
+                        </div>
+
+                        {/* Reminders Section */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700">Promemoria</label>
+                            <div className="flex flex-wrap gap-2">
+                                {reminders.map((rem, idx) => (
+                                    <span key={idx} className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm flex items-center gap-1 border border-indigo-100">
+                                        {new Date(rem).toLocaleDateString('it-IT')}
+                                        <button type="button" onClick={() => setReminders(prev => prev.filter((_, i) => i !== idx))}>
+                                            <X size={12} />
+                                        </button>
+                                    </span>
+                                ))}
+                                <input
+                                    type="date"
+                                    className="p-1 border border-slate-200 rounded text-sm outline-none focus:border-indigo-500"
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            setReminders(prev => [...prev, e.target.value]);
+                                            e.target.value = '';
+                                        }
+                                    }}
+                                />
+                            </div>
+                            <p className="text-xs text-slate-400">Seleziona le date in cui vuoi ricevere una notifica.</p>
                         </div>
 
                         {/* Actions */}
