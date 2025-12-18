@@ -199,7 +199,95 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
                     </div>
                 </div>
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {/* ... fields ... */}
+                    {/* Course Selection */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Materia</label>
+                        <select
+                            value={selectedCourseId}
+                            onChange={(e) => setSelectedCourseId(e.target.value)}
+                            disabled={!!initialData} // Disabilita modifica corso se siamo in edit
+                            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900 transition-all font-medium text-slate-800"
+                        >
+                            <option value="">Seleziona un esame...</option>
+                            {Object.entries(coursesByYear).map(([year, courses]) => (
+                                <optgroup label={`${year}° Anno`} key={year}>
+                                    {courses.map((course) => (
+                                        <option key={course.id} value={course.id}>
+                                            {course.name} ({course.cfu} CFU)
+                                        </option>
+                                    ))}
+                                </optgroup>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Status Selection */}
+                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                        {(['planned', 'passed', 'failed'] as const).map((s) => (
+                            <button
+                                key={s}
+                                type="button"
+                                onClick={() => setStatus(s)}
+                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${status === s
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
+                            >
+                                {s === 'planned' ? 'Pianificato' : s === 'passed' ? 'Superato' : 'Non Superato'}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Grade & Date Row */}
+                    <div className="flex gap-4">
+                        {status === 'passed' && (
+                            <div className="w-24 animate-in slide-in-from-left-2 fade-in">
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Voto</label>
+                                <input
+                                    type="number"
+                                    min="18"
+                                    max="31"
+                                    placeholder="18-30"
+                                    value={grade}
+                                    onChange={(e) => setGrade(e.target.value)}
+                                    className="w-full p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-center text-emerald-600"
+                                />
+                            </div>
+                        )}
+                        <div className="flex-1">
+                            <label className="block text-xs font-medium text-slate-500 mb-1">Data Appello</label>
+                            <input
+                                type="date"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                                className="w-full p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Location fields */}
+                    <div className="space-y-2 pt-2 border-t border-slate-100">
+                        <label className="block text-xs font-medium text-slate-500">Luogo / Sede</label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Es. Aula T1, Via Roma..."
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                className="flex-1 p-2 text-sm border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-slate-900"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setIsPaidLocation(!isPaidLocation)}
+                                className={`px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${isPaidLocation
+                                    ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                    }`}
+                            >
+                                € Sede Extra
+                            </button>
+                        </div>
+                    </div>
 
                     {/* Reminders Section */}
                     <div className="space-y-2">
