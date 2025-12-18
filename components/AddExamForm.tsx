@@ -328,14 +328,14 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
                         <div className="flex flex-wrap gap-2">
                             {reminders.map((rem, idx) => (
                                 <span key={idx} className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm flex items-center gap-1 border border-indigo-100">
-                                    {new Date(rem).toLocaleDateString('it-IT')}
+                                    {new Date(rem).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}
                                     <button type="button" onClick={() => setReminders(prev => prev.filter((_, i) => i !== idx))}>
                                         <X size={12} />
                                     </button>
                                 </span>
                             ))}
                             <input
-                                type="date"
+                                type="datetime-local"
                                 className="p-1 border border-slate-200 rounded text-sm outline-none focus:border-indigo-500"
                                 onChange={(e) => {
                                     if (e.target.value) {
@@ -345,7 +345,7 @@ export default function AddExamForm({ initialData, onSave, onDelete, onCancel }:
                                 }}
                             />
                         </div>
-                        <p className="text-xs text-slate-400">Seleziona le date in cui vuoi ricevere una notifica.</p>
+                        <p className="text-xs text-slate-400">Seleziona data e ora per ricevere una notifica.</p>
                     </div>
 
                     <div className="pt-4 flex gap-3">

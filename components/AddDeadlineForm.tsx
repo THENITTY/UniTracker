@@ -318,7 +318,7 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                             <div className="flex flex-wrap gap-2">
                                 {reminders.map((rem, idx) => (
                                     <span key={idx} className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm flex items-center gap-1 border border-indigo-100">
-                                        {new Date(rem).toLocaleDateString('it-IT')}
+                                        {new Date(rem).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}
                                         <button type="button" onClick={() => setReminders(prev => prev.filter((_, i) => i !== idx))}>
                                             <X size={12} />
                                         </button>
@@ -335,7 +335,7 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                                     }}
                                 />
                             </div>
-                            <p className="text-xs text-slate-400">Seleziona le date in cui vuoi ricevere una notifica.</p>
+                            <p className="text-xs text-slate-400">Seleziona data e ora per ricevere una notifica.</p>
                         </div>
 
                         {/* Actions */}
