@@ -325,7 +325,7 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                                     </span>
                                 ))}
                                 <input
-                                    type="date"
+                                    type="datetime-local"
                                     className="p-1 border border-slate-200 rounded text-sm outline-none focus:border-indigo-500"
                                     onChange={(e) => {
                                         if (e.target.value) {
