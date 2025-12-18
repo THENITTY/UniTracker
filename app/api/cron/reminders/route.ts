@@ -10,15 +10,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!; // Or Service Role key for better security in Cron
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
-const VAPID_SUBJECT = process.env.NEXT_PUBLIC_VAPID_SUBJECT!;
 
-webpush.setVapidDetails(
-    VAPID_SUBJECT,
-    VAPID_PUBLIC_KEY,
-    VAPID_PRIVATE_KEY
-);
 
 export async function GET() {
     // 1. Check authorization (Vercel Cron Header) ensuring it's not spam-called
@@ -26,6 +18,21 @@ export async function GET() {
     // For now we skip strict auth for MVP testing convenience, or check for a simple query param ?key=...
 
     try {
+        const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
+        const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
+        const VAPID_SUBJECT = process.env.NEXT_PUBLIC_VAPID_SUBJECT!;
+
+        if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY || !VAPID_SUBJECT) {
+            console.error('Missing VAPID keys');
+            return NextResponse.json({ error: 'Missing VAPID keys' }, { status: 500 });
+        }
+
+        webpush.setVapidDetails(
+            VAPID_SUBJECT,
+            VAPID_PUBLIC_KEY,
+            VAPID_PRIVATE_KEY
+        );
+
         // 2. Fetch pending reminders for NOW or OLDER (missed ones)
         const now = new Date().toISOString(); // Full timestamp needed for time comparison
 
