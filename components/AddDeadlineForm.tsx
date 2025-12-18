@@ -199,7 +199,7 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
                 <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50 shrink-0">
                     <h2 className="text-lg font-semibold text-slate-800">
                         {initialData ? 'Modifica Scadenza' : 'Aggiungi Scadenza'}
@@ -316,17 +316,25 @@ export default function AddDeadlineForm({ initialData, categories, onSave, onDel
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-700">Promemoria</label>
                             <div className="flex flex-wrap gap-2">
-                                {reminders.map((rem, idx) => (
-                                    <span key={idx} className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-sm flex items-center gap-1 border border-indigo-100">
-                                        {new Date(rem).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}
-                                        <button type="button" onClick={() => setReminders(prev => prev.filter((_, i) => i !== idx))}>
-                                            <X size={12} />
-                                        </button>
-                                    </span>
-                                ))}
+                                {reminders.map((rem, idx) => {
+                                    const dateObj = new Date(rem);
+                                    if (isNaN(dateObj.getTime())) return null;
+                                    return (
+                                        <span key={idx} className="bg-indigo-50 text-indigo-700 px-2 py-1.5 rounded-md text-sm flex items-center gap-1.5 border border-indigo-100 shadow-sm">
+                                            <span className="text-xs font-medium">{dateObj.toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setReminders(prev => prev.filter((_, i) => i !== idx))}
+                                                className="text-indigo-400 hover:text-indigo-600"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </span>
+                                    );
+                                })}
                                 <input
                                     type="datetime-local"
-                                    className="p-1 border border-slate-200 rounded text-sm outline-none focus:border-indigo-500"
+                                    className="px-3 py-1.5 border border-slate-200 rounded-md text-sm outline-none focus:border-indigo-500 text-slate-600 bg-white"
                                     onChange={(e) => {
                                         if (e.target.value) {
                                             setReminders(prev => [...prev, e.target.value]);
