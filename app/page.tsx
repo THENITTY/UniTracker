@@ -45,7 +45,8 @@ export default function Home() {
     const categoriesReq = supabase
       .from('deadline_categories')
       .select('*')
-      .order('name', { ascending: true });
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
 
     const [examsRes, deadlinesRes, categoriesRes] = await Promise.all([examsReq, deadlinesReq, categoriesReq]);
 

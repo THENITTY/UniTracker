@@ -21,4 +21,5 @@ export interface Deadline {
 export interface DeadlineCategory {
     id: string;
     name: string;
+    sort_order?: number;
 }
