@@ -11,6 +11,7 @@ import webpush from 'web-push';
 
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET() {
     // 1. Check authorization (Vercel Cron Header) ensuring it's not spam-called
