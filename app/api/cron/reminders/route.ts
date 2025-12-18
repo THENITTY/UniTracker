@@ -122,7 +122,11 @@ export async function GET() {
                     await webpush.sendNotification({
                         endpoint: sub.endpoint,
                         keys: { auth: sub.auth, p256dh: sub.p256dh }
-                    }, payload);
+                    }, payload, {
+                        headers: {
+                            'Urgency': 'high'
+                        }
+                    });
                     sentCount++;
                 } catch (e) {
                     console.error('Failed to send to', sub.endpoint, e);
