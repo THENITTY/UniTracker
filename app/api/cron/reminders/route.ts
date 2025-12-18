@@ -102,14 +102,14 @@ export async function GET() {
             if (reminder.entity_type === 'exam') {
                 entityName = examsMap[reminder.entity_id];
                 if (entityName) {
-                    title = `Esame in arrivo: ${entityName}`;
-                    body = `Preparati per l'esame di ${entityName}!`;
+                    title = `🎓 ${entityName}`;
+                    body = `Non dimenticare il tuo esame! In bocca al lupo 🍀`;
                 }
             } else if (reminder.entity_type === 'deadline') {
                 entityName = deadlinesMap[reminder.entity_id];
                 if (entityName) {
-                    title = `Scadenza: ${entityName}`;
-                    body = `Non dimenticare: ${entityName} scade a breve.`;
+                    title = `📅 ${entityName}`;
+                    body = `Ricordati di questa scadenza!`;
                 }
             }
 
